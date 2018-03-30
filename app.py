@@ -7,6 +7,7 @@ from flask import request
 from flask import jsonify
 
 import time
+import json
 
 cred = credentials.Certificate('vonder-44d1a-firebase-adminsdk-61wot-1ff1bfc63e.json')
 
@@ -19,6 +20,7 @@ app = Flask(__name__)
 # Example CRUD operation for firebase
 # For more plese see
 # https://firebase.google.com/docs/database/admin/save-data
+# https://firebase.google.com/docs/reference/admin/python/firebase_admin.db
 @app.route('/create', methods=['GET'])
 def create():
     user_id = request.args.get('user_id')
@@ -108,6 +110,26 @@ def createScore():
                 "text": "บวก " + score + " เรียบร้อยจ่ะ"
             }]
         }
+    return jsonify(text)
+
+@app.route('/calculate-score', methods=['GET'])
+def calculateScore():
+    user_id = request.args.get('messenger user id')
+    teacher_id = request.args.get('teacher id')
+
+    ref = db.reference('scores')
+    questions = ref.child(user_id).child(teacher_id).get()
+    total = 0
+    for key, value in questions.items():
+        total += int(value["score"])
+    text = {
+        "set_attributes": {
+          "total": total,
+        },
+        "messages": [{
+            "text": "ตอนนี้ได้คะแนน " + str(total) + " จ้า"
+        }]
+    }
     return jsonify(text)
 
 if __name__=="__main__":
