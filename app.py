@@ -80,7 +80,7 @@ def delete():
     }
     return jsonify(text)
 
-@app.route('/createScore', methods=['GET'])
+@app.route('/create-score', methods=['GET'])
 def createScore():
     user_id = request.args.get('messenger user id')
     teacher_id = request.args.get('teacher id')
@@ -131,6 +131,31 @@ def calculateScore():
         }]
     }
     return jsonify(text)
+
+@app.route('/create-rank', methods=['GET'])
+def createRank():
+    user_id = request.args.get('messenger user id')
+    teacher_id = request.args.get('teacher id')
+    rank = request.args.get('rank')
+
+    ref = db.reference('ranks')
+    ref.child(user_id).child(teacher_id).update({
+       'rank': rank,
+       'timestamp': int(time.time())
+    })
+
+    ref = db.reference('rank-agg')
+    ref.child(rank).update({
+       'frequency': ref.child(rank).get()["frequency"] + 1,
+    })
+
+    text = {
+        "messages": [{
+            "text": "Successfully Created"
+        }]
+    }
+    return jsonify(text)
+
 
 if __name__=="__main__":
 
